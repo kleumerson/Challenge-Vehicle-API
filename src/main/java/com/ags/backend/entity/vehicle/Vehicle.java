@@ -8,6 +8,8 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 @Data
 @Entity
 @AllArgsConstructor
@@ -27,18 +29,18 @@ public class Vehicle  {
     private String traction;
 
     @Column(name = "price_vehicle")
-    private float price;
+    private BigDecimal price;
 
     @Column(name = "usage_vehicle", length = 3)
     private int usageTime;
 
     @JsonIgnore
-    @ManyToOne(targetEntity = Model.class, cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = Model.class, cascade = CascadeType.MERGE)
     @JoinColumn(name = "model_id", referencedColumnName = "id_model")
     private Model model;
 
     @JsonIgnore
-    @ManyToOne(targetEntity = Fuel.class, cascade = CascadeType.ALL)
+    @ManyToOne(targetEntity = Fuel.class, cascade = CascadeType.MERGE)
     @JoinColumn(name = "fuel_id", referencedColumnName = "id_fuel")
-    private Fuel fuel;
+    private Fuel idFuel;
 }

@@ -1,6 +1,7 @@
 package com.ags.backend.controller.vehicle;
 
 import com.ags.backend.dto.vehicle.VehicleDto;
+import com.ags.backend.entity.vehicle.Vehicle;
 import com.ags.backend.message.MessageResponse;
 import com.ags.backend.repository.vehicle.VehicleRepository;
 import com.ags.backend.service.vehicle.VehicleService;
@@ -28,15 +29,13 @@ public class VehicleController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(new MessageResponse("Error is necessary to load the file"));
         }
-
-        vehicleService.processFileVehicle(file);
+        vehicleService.process(file);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new MessageResponse("file to loaded successfully."));
     }
     @RequestMapping(value = "/find", method = RequestMethod.POST)
-    public ResponseEntity<List<VehicleDto>> findAllVehicle(@RequestBody VehicleDto vehicleDto){
-
-        return new ResponseEntity<>(vehicleService
-                .findAllVehicle(vehicleDto), HttpStatus.OK);
+    public ResponseEntity<List<Vehicle>> findAllVehicle(@RequestBody VehicleDto vehicleDto){
+        return ResponseEntity.ok()
+                .body(vehicleService.getAll(vehicleDto));
     }
 }

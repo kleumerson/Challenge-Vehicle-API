@@ -5,20 +5,20 @@ import com.ags.backend.dto.fuel.FuelDto;
 import com.ags.backend.dto.model.ModelDto;
 import com.ags.backend.dto.vehicle.VehicleDto;
 import com.ags.backend.entity.brand.Brand;
+import com.ags.backend.entity.fuel.Fuel;
 import com.ags.backend.entity.model.Model;
 import com.ags.backend.entity.vehicle.Vehicle;
-import com.ags.backend.exception.VehicleNotFoundException;
 import com.ags.backend.repository.brand.BrandRepository;
 import com.ags.backend.repository.fuel.FuelRepository;
 import com.ags.backend.repository.model.ModelRepository;
 import com.ags.backend.repository.vehicle.VehicleRepository;
-import com.ags.backend.specification.SpecificationVehicle;
+import com.ags.backend.specification.VehicleSpecification;
+import com.ags.backend.util.Util;
 import com.opencsv.CSVParserBuilder;
 import com.opencsv.CSVReader;
 import com.opencsv.CSVReaderBuilder;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Propagation;
@@ -28,10 +28,10 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
 @Service
 public class VehicleService {
@@ -45,9 +45,9 @@ public class VehicleService {
     private VehicleRepository vehicleRepository;
     @Autowired
     private ModelMapper modelMapper;
-    @Transactional(readOnly = false, isolation = Isolation.READ_COMMITTED, propagation = Propagation.NEVER)
-    public void processFileVehicle(MultipartFile file) throws IOException {
-        try{
+
+    public void process(MultipartFile file) throws IOException {
+        try {
             BufferedReader bufferedReader =
                     new BufferedReader(new InputStreamReader(file.getInputStream(), StandardCharsets.UTF_8));
 
@@ -59,79 +59,98 @@ public class VehicleService {
             String[] rows = null;
             while ((rows = reader.readNext()) != null) {
 
-                BrandDto brandDto = new BrandDto(rows[0]);
-                //brandDto.setNameBrand(rows[0]);
+                String nameBrand =
+                        rows[0].trim();
+                String nameModel =
+                        rows[1].trim();
+                String nameFuel =
+                        rows[2].trim();
+                String nameTransmission =
+                        rows[3].trim();
+                String nameTraction =
+                        rows[4].trim();
+                BigDecimal namePrince =
+                        Util.formatBigDecimalWithDecimalPlace(rows[5].trim());
+                int nameUseTime =
+                        Integer.parseInt(rows[6].trim());
 
-                ModelDto modelDto = new ModelDto();
-                modelDto.setModelName(rows[1]);
-                modelDto.setBrand(brandDto);
-
-                FuelDto fuelDto = new FuelDto();
-                fuelDto.setNameFuel(rows[2]);
-
-                VehicleDto vehicleDto = new VehicleDto();
-                vehicleDto.setModel(modelDto);
-                vehicleDto.setFuel(fuelDto);
-                vehicleDto.setTransmission(rows[3]);
-                vehicleDto.setTraction(rows[4]);
-                vehicleDto.setPrice(null);
-                vehicleDto.setUsageTime(Integer.parseInt(rows[6]));
-
-                if (!brandRepository.existsByNameBrand(
-                        brandDto.getNameBrand())){
-                    brandRepository
-                            .save(modelMapper.map(
-                                    brandDto, Brand.class));
-                }
-                if (!modelRepository.existsByNameModel(
-                        modelDto.getModelName())){
-                    modelRepository
-                            .save(modelMapper.map(
-                                    modelDto, Model.class));
-                }
-                if (!fuelRepository.existsByNameFuel(
-                        fuelDto.getNameFuel()))
-                    brandRepository
-                            .save(modelMapper.map(
-                                    brandDto, Brand.class));
-                vehicleRepository
-                        .save(modelMapper.map(
-                                vehicleDto, Vehicle.class));
+                save(nameBrand, nameModel, nameFuel, nameTransmission, nameTraction, namePrince, nameUseTime);
             }
-
             bufferedReader.close();
             reader.close();
-
-        }catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
-    public List<VehicleDto> findAllVehicle(VehicleDto vehicleDto){
+    @Transactional(readOnly = false, isolation = Isolation.READ_COMMITTED, propagation = Propagation.NEVER)
+    public void save(String brand, String model, String fuel, String transmission,
+                     String traction, BigDecimal prince, int useTime){
 
-        Specification<Vehicle> vehicleSpecification = null;
+        BrandDto brandDto = new BrandDto();
+        int contBrand = brandRepository
+                .existsRegisteredBrand(brand);
 
-        if (vehicleDto.getTransmission() != null && vehicleDto.getUsageTime() != 0
-                && vehicleDto.getTraction() != null){
-
-            vehicleSpecification = Specification.where(SpecificationVehicle.usageTime(vehicleDto.getUsageTime()))
-                    .and(SpecificationVehicle.transmission(vehicleDto.getTransmission()));
+        if (contBrand == 0) {
+            brandDto.setNameBrand(brand);
+            brandRepository
+                    .save(modelMapper.map(
+                            brandDto, Brand.class));
         }
-        if ((vehicleDto.getUsageTime() != 0) && (vehicleDto.getTransmission() != null) && (vehicleDto.getTraction() != null)
-                && ((vehicleDto.getPrice() != null) && (vehicleDto.getFinalPrice() != null))){
 
-            vehicleSpecification = Specification.where(SpecificationVehicle.usageTime(vehicleDto.getUsageTime()))
-                    .and(SpecificationVehicle.transmission(vehicleDto.getTransmission())
-                            .and(SpecificationVehicle.price(vehicleDto.getPrice(), vehicleDto.getFinalPrice())
-                                    .and(SpecificationVehicle.transmission(vehicleDto.getTraction()))));
+        int idBrand = brandRepository
+                .findIdBrand(brand);
+        brandDto.setIdBrand(idBrand);
+
+        ModelDto modelDto = new ModelDto();
+        int contModel = modelRepository
+                .existsRegisteredModel(model);
+
+        if (contModel == 0){
+            modelDto.setModelName(model);
+            modelDto.setBrand(brandDto);
+            modelRepository
+                    .save(modelMapper.map(
+                            modelDto, Model.class));
         }
-        assert vehicleSpecification != null;
-        List<VehicleDto> listVehicleDto = vehicleRepository.findAll(vehicleSpecification)
-                .stream().map(m-> modelMapper.map(m, VehicleDto.class))
-                .collect(Collectors.toList());
-        if (listVehicleDto.isEmpty()) {
-            throw new VehicleNotFoundException();
+
+        int idModel = modelRepository
+                .findIdModel(model);
+        modelDto.setIdModel(idModel);
+
+        FuelDto fuelDto = new FuelDto();
+        int contFuel = fuelRepository.existsRegisteredFuel(fuel);
+        if (contFuel == 0) {
+            fuelDto.setNameFuel(fuel);
+            fuelRepository
+                    .save(modelMapper.map(
+                            fuelDto, Fuel.class));
         }
-        return listVehicleDto;
+
+        int id_fuel = fuelRepository
+                .findIdFuel(fuel);
+        fuelDto.setIdFuel(id_fuel);
+
+        VehicleDto vehicleDto = new VehicleDto();
+        vehicleDto.setModel(modelDto);
+        vehicleDto.setIdFuel(fuelDto);
+        vehicleDto.setTransmission(transmission);
+        vehicleDto.setTraction(transmission);
+        vehicleDto.setPrice(prince);
+        vehicleDto.setUsageTime(useTime);
+
+        vehicleRepository
+                .save(modelMapper.map(
+                        vehicleDto, Vehicle.class));
+    }
+    public List<Vehicle> getAll(VehicleDto vehicleDto){
+
+        Vehicle vehicle = modelMapper
+                .map(vehicleDto, Vehicle.class);
+
+        VehicleSpecification vehicleSpecification
+                = new VehicleSpecification();
+
+        return new ArrayList<>(vehicleSpecification.getAll(vehicleDto));
     }
 }
 

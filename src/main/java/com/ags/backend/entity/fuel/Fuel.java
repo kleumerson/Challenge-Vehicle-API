@@ -15,12 +15,12 @@ public class Fuel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_fuel", unique = true, nullable = false)
-    private int id;
+    private int idFuel;
 
     @Column(name = "name_fuel", length = 50)
     private String nameFuel;
 
     @JsonIgnore
-    @OneToMany(targetEntity = Vehicle.class, mappedBy = "fuel", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = Vehicle.class, mappedBy = "idFuel", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Vehicle> vehicles;
 }

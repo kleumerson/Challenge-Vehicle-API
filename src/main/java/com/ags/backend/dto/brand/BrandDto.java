@@ -6,10 +6,8 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
 public class BrandDto {
-    public BrandDto(String nameBrand) {
-        this.nameBrand = nameBrand;
-    }
-
+    private int idBrand;
     private String nameBrand;
 }

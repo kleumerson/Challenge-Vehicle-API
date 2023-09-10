@@ -1,6 +1,7 @@
 package com.ags.backend.entity.model;
 
 import com.ags.backend.entity.brand.Brand;
+import com.ags.backend.entity.fuel.Fuel;
 import com.ags.backend.entity.vehicle.Vehicle;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -22,7 +23,7 @@ public class Model {
     private String nameModel;
 
     @JsonIgnore
-    @ManyToOne(targetEntity = Brand.class,cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "brand_id", referencedColumnName = "id_brand")
     private Brand brand;
 

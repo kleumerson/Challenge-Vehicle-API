@@ -1,6 +1,7 @@
 package com.ags.backend.entity.brand;
 
 import com.ags.backend.entity.model.Model;
+import com.ags.backend.entity.vehicle.Vehicle;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -25,6 +26,6 @@ public class Brand {
     private String nameBrand;
 
     @JsonIgnore
-    @OneToMany(targetEntity = Model.class, mappedBy = "brand", cascade = CascadeType.PERSIST)
+    @OneToMany(targetEntity = Model.class, mappedBy = "brand", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Model> models;
 }

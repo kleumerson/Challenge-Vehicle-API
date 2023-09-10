@@ -12,11 +12,12 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 public class VehicleDto {
+    private int idVehicle;
     private ModelDto model;
     private BigDecimal price;
     private BigDecimal finalPrice;
     private String transmission;
     private String traction;
     private int usageTime;
-    private FuelDto fuel;
+    private FuelDto idFuel;
 }

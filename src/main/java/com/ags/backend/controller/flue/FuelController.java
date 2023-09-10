@@ -3,9 +3,10 @@ package com.ags.backend.controller.flue;
 import com.ags.backend.dto.fuel.FuelDto;
 import com.ags.backend.service.fuel.FuelService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
@@ -14,13 +15,8 @@ import java.util.List;
 public class FuelController {
     @Autowired
     private FuelService fuelService;
-    @RequestMapping(value = "/find", method = RequestMethod.GET)
+    @RequestMapping(value = "/findAll", method = RequestMethod.GET)
     public ResponseEntity<List<FuelDto>> findAllFuel(){
-
-        return new ResponseEntity<>(fuelService.findAllFull(), HttpStatus.OK);
-    }
-    @RequestMapping(value = "/fuel", method = RequestMethod.POST)
-    public ResponseEntity<List<FuelDto>> findByFuelVehicle(@RequestBody FuelDto fuelDto){
-        return new ResponseEntity<>(fuelService.findByFuelVehicle(fuelDto), HttpStatus.OK);
+        return ResponseEntity.ok().body(fuelService.findAllFull());
     }
 }

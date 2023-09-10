@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class FuelDto {
+    private int idFuel;
     private String nameFuel;
 }
